@@ -1,4 +1,4 @@
-# code-with-quarkus
+# INSIDE M2M Test Backend
 
 This project uses Quarkus, the Supersonic Subatomic Java Framework.
 
@@ -13,66 +13,31 @@ You can run your application in dev mode that enables live coding using:
 ```
 
 > **_NOTE:_**  Quarkus now ships with a Dev UI, which is available in dev mode only at <http://localhost:8080/q/dev/>.
+> **_WARN:_**  This is not available when running via docker
 
-## Packaging and running the application
+## Docker
 
-The application can be packaged using:
+You can also execute `docker compose up --build` to build an image from source and get the apropriate database setup.
+Currently, the database is being initialized with the schema but the ingestion of demo data is not working properly via docker volume binds.
 
-```shell script
-./mvnw package
-```
+## REST
 
-It produces the `quarkus-run.jar` file in the `target/quarkus-app/` directory.
-Be aware that it’s not an _über-jar_ as the dependencies are copied into the `target/quarkus-app/lib/` directory.
+The REST API has two endpoints.
 
-The application is now runnable using `java -jar target/quarkus-app/quarkus-run.jar`.
+### v1/device/read/{id}
+Get a device by id
+Use this `curl` command:
+`
+curl localhost:8080/v1/device/read/{id}
+`
 
-If you want to build an _über-jar_, execute the following command:
-
-```shell script
-./mvnw package -Dquarkus.package.jar.type=uber-jar
-```
-
-The application, packaged as an _über-jar_, is now runnable using `java -jar target/*-runner.jar`.
-
-## Creating a native executable
-
-You can create a native executable using:
-
-```shell script
-./mvnw package -Dnative
-```
-
-Or, if you don't have GraalVM installed, you can run the native executable build in a container using:
-
-```shell script
-./mvnw package -Dnative -Dquarkus.native.container-build=true
-```
-
-You can then execute your native executable with: `./target/code-with-quarkus-1.0.0-SNAPSHOT-runner`
-
-If you want to learn more about building native executables, please consult <https://quarkus.io/guides/maven-tooling>.
-
-## Related Guides
-
-- REST ([guide](https://quarkus.io/guides/rest)): A Jakarta REST implementation utilizing build time processing and Vert.x. This extension is not compatible with the quarkus-resteasy extension, or any of the extensions that depend on it.
-- REST Jackson ([guide](https://quarkus.io/guides/rest#json-serialisation)): Jackson serialization support for Quarkus REST. This extension is not compatible with the quarkus-resteasy extension, or any of the extensions that depend on it
-- Hibernate ORM with Panache ([guide](https://quarkus.io/guides/hibernate-orm-panache)): Simplify your persistence code for Hibernate ORM via the active record or the repository pattern
-- JDBC Driver - MySQL ([guide](https://quarkus.io/guides/datasource)): Connect to the MySQL database via JDBC
-
-## Provided Code
-
-### Hibernate ORM
-
-Create your first JPA entity
-
-[Related guide section...](https://quarkus.io/guides/hibernate-orm)
-
-[Related Hibernate with Panache section...](https://quarkus.io/guides/hibernate-orm-panache)
-
-
-### REST
-
-Easily start your REST Web Services
-
-[Related guide section...](https://quarkus.io/guides/getting-started-reactive#reactive-jax-rs-resources)
+### v1/device/create
+create a device via a JSON payload
+Use this `curl` command:
+`
+curl --request POST 'localhost:8080/v1/device/create' --header 'Content-Type: application/json' \
+--data-raw '{
+"external_id": "lskdgf",
+"connection_type": "LAN"
+}'
+`
