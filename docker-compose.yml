@@ -1,0 +1,56 @@
+---
+services:
+  api:
+    container_name: device-api
+    build:
+      context: .
+      dockerfile: src/main/docker/Dockerfile.jvm
+    ports:
+      - "8080:8080"
+    environment:
+      - QUARKUS_DATASOURCE_USERNAME=root
+      - QUARKUS_DATASOURCE_PASSWORD=secret
+      - QUARKUS_DATASOURCE_JDBC_URL=jdbc:mysql://mysql:3306/device_db
+    volumes:
+      - ./src/main/java:/home/app/src  # Mount source code for hot reload
+      - ./pom.xml:/home/app/pom.xml
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - api_network
+      - db_network
+
+  db:
+    hostname: mysql
+    container_name: mysql-m2m
+    image: mysql:8.4.3
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_DATABASE: device_db
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - type: bind
+        source: ./src/main/resources/sql/01-schema.sql
+        target: /docker-entrypoint-initdb.d/01-schema.sql
+        read_only: true
+      - type: bind
+        source: ./src/main/resources/sql/02-data.sql
+        target: /docker-entrypoint-initdb.d/02-data.sql
+        read_only: true
+    networks:
+      - db_network
+
+networks:
+  api_network:
+    driver: bridge
+
+  db_network:
+    driver: bridge
+    internal: false
